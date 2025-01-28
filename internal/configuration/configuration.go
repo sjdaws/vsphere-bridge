@@ -14,12 +14,13 @@ import (
 
 // Configuration resolved configuration from os.Getenv and os.Args.
 type Configuration struct {
-	Insecure bool
-	Password string
-	Port     string
-	Server   *url.URL
-	Username string
-	fqdn     string
+	Insecure  bool
+	NotifyURL string
+	Password  string
+	Port      string
+	Server    *url.URL
+	Username  string
+	fqdn      string
 }
 
 type resolved map[string]string
@@ -33,11 +34,12 @@ func Resolve() (*Configuration, error) {
 
 	// Prefer flags where possible
 	config := &Configuration{
-		Insecure: truthy.Value(strings.TrimSpace(preferFlags(flags, env, "insecure"))),
-		Password: strings.TrimSpace(env["password"]),
-		Port:     truthy.Cond(port != "", port, "8000"),
-		Username: strings.TrimSpace(env["username"]),
-		fqdn:     strings.TrimSpace(strings.TrimSuffix(preferFlags(flags, env, "fqdn"), "/")),
+		Insecure:  truthy.Value(strings.TrimSpace(preferFlags(flags, env, "insecure"))),
+		NotifyURL: strings.TrimSpace(preferFlags(flags, env, "notify_url")),
+		Password:  strings.TrimSpace(env["password"]),
+		Port:      truthy.Cond(port != "", port, "8000"),
+		Username:  strings.TrimSpace(env["username"]),
+		fqdn:      strings.TrimSpace(strings.TrimSuffix(preferFlags(flags, env, "fqdn"), "/")),
 	}
 
 	err := validate(config)
@@ -56,11 +58,12 @@ func preferFlags(flags resolved, env resolved, key string) string {
 // resolveEnv from environment variables.
 func resolveEnv() resolved {
 	return resolved{
-		"fqdn":     os.Getenv("VSPHERE_FQDN"),
-		"insecure": truthy.Cond(truthy.Value(os.Getenv("ALLOW_INSECURE")), "true", "false"),
-		"password": os.Getenv("VSPHERE_PASSWORD"),
-		"port":     os.Getenv("BRIDGE_PORT"),
-		"username": os.Getenv("VSPHERE_USERNAME"),
+		"fqdn":       os.Getenv("VSPHERE_FQDN"),
+		"insecure":   truthy.Cond(truthy.Value(os.Getenv("ALLOW_INSECURE")), "true", "false"),
+		"notify_url": os.Getenv("NOTIFY_URL"),
+		"password":   os.Getenv("VSPHERE_PASSWORD"),
+		"port":       os.Getenv("BRIDGE_PORT"),
+		"username":   os.Getenv("VSPHERE_USERNAME"),
 	}
 }
 
@@ -69,12 +72,14 @@ func resolveFlags() resolved {
 	var port = flag.Int("port", -1, "port to run bridge on")
 	var insecure = flag.Bool("insecure", false, "disable tls certificate verification")
 	var fqdn = flag.String("fqdn", "", "vsphere server fqdn")
+	var notifyURL = flag.String("notify-url", "", "shoutrrr compatible notify url")
 	flag.Parse()
 
 	return resolved{
-		"fqdn":     *fqdn,
-		"insecure": truthy.Cond(*insecure, "true", "false"),
-		"port":     truthy.Cond(*port >= 0, strconv.Itoa(*port), ""),
+		"fqdn":       *fqdn,
+		"insecure":   truthy.Cond(*insecure, "true", "false"),
+		"notify_url": *notifyURL,
+		"port":       truthy.Cond(*port >= 0, strconv.Itoa(*port), ""),
 	}
 }
 

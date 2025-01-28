@@ -11,6 +11,7 @@ import (
 	"github.com/sjdaws/vsphere-bridge/internal/vsphere"
 	"github.com/sjdaws/vsphere-bridge/internal/vsphere/vms/power"
 	"github.com/sjdaws/vsphere-bridge/pkg/logging"
+	"github.com/sjdaws/vsphere-bridge/pkg/notifier"
 )
 
 const usageText = `
@@ -57,6 +58,11 @@ func main() {
 		os.Exit(0)
 	}
 
+	var notify *notifier.Notifier
+	if config.NotifyURL != "" {
+		notify = notifier.New([]string{config.NotifyURL})
+	}
+
 	server := echo.New()
 	server.HTTPErrorHandler = func(err error, ctx echo.Context) {
 		logger.Error(err)
@@ -68,7 +74,7 @@ func main() {
 	})
 
 	api := vsphere.New(config, logger)
-	power.New(*api, server)
+	power.New(*api, notify, server)
 
 	err = server.Start(":" + config.Port)
 	if err != nil {

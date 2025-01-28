@@ -108,18 +108,33 @@ func (p *Power) getVirtualMachineByName(ctx echo.Context, name string) (virtualM
 
 // performPowerAction perform a power action on a virtualMachine.
 func (p *Power) performPowerAction(ctx echo.Context, action string, vm virtualMachine) error {
+	if p.notify != nil {
+		p.notify.Message(fmt.Sprintf("request received to %s virtual machine %s", action, vm.Name))
+	}
+
 	var err error
 	if vm.ID == "" {
 		vm, err = p.getVirtualMachineByName(ctx, vm.Name)
 		if err != nil {
+			if p.notify != nil {
+				p.notify.Message("unable to find virtual machine")
+			}
+
 			return errors.Wrap(err, "unable to find virtual machine")
 		}
 	}
 
 	_, err = p.vsphere.Request(ctx, http.MethodPost, fmt.Sprintf("/vcenter/vm/%s/power?action=%s", vm.ID, action), nil)
 	if err != nil {
+		if p.notify != nil {
+			p.notify.Message(fmt.Sprintf("unable to %s virtual machine %s: %v", action, vm.Name, err))
+		}
+
 		return errors.Wrap(err, "unable to perform virtual machine power action")
 	}
 
+	if p.notify != nil {
+		p.notify.Message(fmt.Sprintf("%s virtual machine %s successful", action, vm.Name))
+	}
 	return nil
 }

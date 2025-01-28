@@ -4,12 +4,13 @@ go 1.21.3
 
 require (
 	github.com/carlmjohnson/truthy v0.23.1
-	github.com/fatih/color v1.13.0
+	github.com/fatih/color v1.15.0
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/stretchr/testify v1.10.0
 )
 
 require (
+	github.com/containrrr/shoutrrr v0.8.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect

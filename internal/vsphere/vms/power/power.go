@@ -4,15 +4,18 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/sjdaws/vsphere-bridge/internal/vsphere"
+	"github.com/sjdaws/vsphere-bridge/pkg/notifier"
 )
 
 type Power struct {
+	notify  *notifier.Notifier
 	vsphere vsphere.Vsphere
 }
 
 // New create a new power instance.
-func New(vsphere vsphere.Vsphere, server *echo.Echo) *Power {
+func New(vsphere vsphere.Vsphere, notify *notifier.Notifier, server *echo.Echo) *Power {
 	api := &Power{
+		notify:  notify,
 		vsphere: vsphere,
 	}
 
